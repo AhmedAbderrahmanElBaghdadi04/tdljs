@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de Tâches Asynchrones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .task-list {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 500px;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Application de Gestion de Tâches</h1>
+
+    <!-- Formulaire pour ajouter une tâche -->
+    <div>
+        <label for="taskTitle">Titre de la tâche :</label>
+        <input type="text" id="taskTitle" placeholder="Entrez une tâche">
+        <button onclick="handleAddTask()">Ajouter</button>
+    </div>
+
+    <!-- Liste des tâches -->
+    <div class="task-list" id="taskList">
+        <h2>Liste des Tâches</h2>
+        <!-- Les tâches seront ajoutées dynamiquement ici -->
+    </div>
+
+    <script>
+        // Liste initiale des tâches
+        let tasks = [
+            { id: 1, title: "Apprendre les Promesses", completed: false },
+            { id: 2, title: "Explorer async/await", completed: false },
+        ];
+
+        // Fonction pour afficher les tâches
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '<h2>Liste des Tâches</h2>'; // Réinitialiser le contenu
+
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                taskItem.innerHTML = `
+                    <span>${task.title}</span>
+                    <div>
+                        <button onclick="handleUpdateTask(${task.id})">Modifier</button>
+                        <button onclick="handleDeleteTask(${task.id})">Supprimer</button>
+                    </div>
+                `;
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        // Simuler un appel API
+        function simulateApiCall(data, delay = 1000) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (Math.random() > 0.1) { // 90% de succès
+                        resolve(data);
+                    } else {
+                        reject("Erreur : Requête échouée !");
+                    }
+                }, delay);
+            });
+        }
+
+        // Ajouter une tâche
+        async function handleAddTask() {
+            const taskTitle = document.getElementById('taskTitle').value;
+            if (!taskTitle) {
+                alert("Le titre de la tâche est requis !");
+                return;
+            }
+
+            const newTask = { id: tasks.length + 1, title: taskTitle, completed: false };
+            try {
+                const task = await simulateApiCall(newTask);
+                tasks.push(task);
+                renderTasks();
+                document.getElementById('taskTitle').value = ''; // Réinitialiser le champ
+                alert("Tâche ajoutée avec succès !");
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        // Modifier une tâche
+        async function handleUpdateTask(id) {
+            const newTitle = prompt("Entrez le nouveau titre de la tâche :");
+            if (!newTitle) return;
+
+            const task = tasks.find(t => t.id === id);
+            if (!task) {
+                alert("Tâche introuvable !");
+                return;
+            }
+
+            task.title = newTitle;
+            try {
+                await simulateApiCall(task);
+                renderTasks();
+                alert("Tâche mise à jour avec succès !");
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        // Supprimer une tâche
+        async function handleDeleteTask(id) {
+            try {
+                await simulateApiCall(id);
+                tasks = tasks.filter(t => t.id !== id);
+                renderTasks();
+                alert("Tâche supprimée avec succès !");
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        // Afficher les tâches au chargement de la page
+        renderTasks();
+    </script>
+</body>
+</html>
